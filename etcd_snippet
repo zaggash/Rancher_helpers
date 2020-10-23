@@ -1,0 +1,3 @@
+docker exec -ti etcd etcdctl get / --prefix --keys-only
+
+

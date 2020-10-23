@@ -1,0 +1,24 @@
+openssl genrsa  -out kube-ca.key 4096
+
+openssl req -new -key kube-ca.key -x509 -days 1000 -out kube-ca.pem
+
+for cert in $(ls -1 *csr*); do openssl x509 -req -in $cert -CA kube-ca.pem -CAkey kube-ca.key -CAcreateserial -out $(basename -s -csr.pem $cert).pem -days 500 -sha256; done
+
+for cert in $(ls -1 *etcd*csr*); do openssl x509 -req -in $cert -CA kube-ca.pem -CAkey kube-ca.key -CAcreateserial -out $(basename -s -csr.pem $cert).pem -extfile <(printf "subjectAltName=DNS:node1,DNS:node2,DNS:node3,DNS:localhost,DNS:kubernetes,DNS:kubernetes.default,DNS:kubernetes.default.svc,DNS:kubernetes.default.svc.cluster.local,IP:134.122.68.241,IP:10.135.88.6,IP:68.183.211.74,IP:10.135.9.140,IP:157.230.104.138,IP:10.135.88.21,IP:127.0.0.1,IP:10.43.0.1") -days 500 -sha256; done
+
+for cert in $(ls -1 *apiserver*csr*); do openssl x509 -req -in $cert -CA kube-ca.pem -CAkey kube-ca.key -CAcreateserial -out $(basename -s -csr.pem $cert).pem -extfile <(printf "subjectAltName=DNS:node1,DNS:node2,DNS:node3,DNS:localhost,DNS:kubernetes,DNS:kubernetes.default,DNS:kubernetes.default.svc,DNS:kubernetes.default.svc.cluster.local,IP:134.122.68.241,IP:10.135.88.6,IP:68.183.211.74,IP:10.135.9.140,IP:157.230.104.138,IP:10.135.88.21,IP:127.0.0.1,IP:10.43.0.1") -days 500 -sha256; done
+
+for cert in $(ls -1 kube-apiserver-proxy-client-csr.pem); do openssl x509 -req -in $cert -CA kube-ca.pem -CAkey kube-ca.key -CAcreateserial -out $(basename -s -csr.pem $cert).pem -days 500 -sha256; done
+
+for csr in $(ls -1 *csr*);do echo "$csr :";  openssl req -text -noout -verify -in $csr| grep -A2 Alternative; echo "________" ; done
+
+rke up --ssh-agent-auth --custom-certs --cert-dir ~/work/Labs/running_labs/lab_rke/cluster_certs/ 
+
+export KUBECONFIG=./kube_config_cluster.yml
+Remove canal-token secrets
+remove coredns token secret
+remove coredns pods
+remove canals pods
+remove default-token-dwh6h ingress secret
+remove nginx-ingress-serviceaccount-token-cmvq2
+remove ingress controller pods

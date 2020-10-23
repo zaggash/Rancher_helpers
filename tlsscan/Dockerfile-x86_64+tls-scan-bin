@@ -1,0 +1,24 @@
+FROM ubuntu
+LABEL maintainer="zaggash"
+
+RUN \
+  apt-get update \
+  && apt-get install -y \
+    curl \
+    wget \
+    jq \
+    ca-certificates \
+
+  && version=$(curl -sL "https://api.github.com/repos/prbinu/tls-scan/releases/latest" |\
+                jq -r '.tag_name' ) \
+
+  && echo "...Downloading version : $version" \
+  && url=$(curl -sL "https://api.github.com/repos/prbinu/tls-scan/releases/latest" |\
+                jq -r '.assets[] | select(.name | contains("-linux.tar.gz")) | .browser_download_url') \
+  && wget "$url" \
+  && echo "... Done" \
+  && tar xvzf tls-scan-linux.tar.gz ./tls-scan/tls-scan \
+  && rm -f tls-scan-linux.tar.gz
+
+ENTRYPOINT ["/tls-scan/tls-scan"]
+CMD ["--help"]

@@ -1,0 +1,31 @@
+FROM alpine
+LABEL maintainer="zaggash"
+
+RUN \
+  # Install Deps
+  echo "* Install Make packages" \
+  && apk add --no-cache \
+    git \
+    curl \
+    zip \
+    jq \
+    ca-certificates \
+    build-base \
+    autoconf \
+    automake \
+    pkgconf \
+    libtool \
+
+    # Get repo
+    && echo "* Clone Repo" \
+    && git clone https://github.com/prbinu/tls-scan.git \
+    && echo "* cd into the repo" \
+    && cd tls-scan \
+
+    # Start build
+    && echo "* Starting the build" \
+    && ./build-x86-64.sh \
+    && echo "* FIN"
+
+ENTRYPOINT ["tls-scan"]
+CMD ["--help"]
